@@ -3,6 +3,27 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from config import MODEL_NAME
+from rich.console import Console
+from rich.markdown import Markdown
+
+def clean_math(text):
+    replacements = {
+        r"\times": "×",
+        r"\cdot": "·",
+        r"\le": "≤",
+        r"\ge": "≥",
+        r"\neq": "≠",
+        r"\infty": "∞",
+        r"\rightarrow": "→",
+        r"\leftarrow": "←",
+    }
+
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+
+    text = text.replace("$", "")
+
+    return text
 
 load_dotenv()
 
@@ -24,6 +45,8 @@ chat = client.chats.create(
     )
 )
 
+console = Console()
+
 print("🤖 AI Study Assistant Started!")
 print("Type 'exit' to quit.\n")
 
@@ -37,9 +60,10 @@ while True:
     try:
         response = chat.send_message(question)
 
-        print("\nGemini:")
-        print(response.text)
-        print()
+        console.print("\n[bold cyan]Gemini:[/bold cyan]\n")
+        cleaned_response = clean_math(response.text)
+        console.print(Markdown(cleaned_response))
+        console.print()
 
     except Exception as e:
         print("\nError:", e)
